@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: Hi-Lo game
+  description: |-
+    La mia soluzione all'esercizio Hi-Lo game (escludendo il reset del gioco)
+tags:
+  - name: hiLoGame
+    description: Indovina il numero corretto
+
+paths:
+  /games:
+    get:
+      summary: Trova tutte le informazioni su tutti i giochi avviati
+      tags:
+        - hiLoGame
+      responses:
+        "200":
+          description: Ecco tutte le info relative a tutti i giochi
+          content:
+            application/json:
+              schema: #Mi serve anche il numero di tentativi di ogni partita
+                type: array
+                items: { $ref: "#/components/schemas/Game" }
+    post:
+      summary: Avvia un nuovo gioco
+      description: Avvia un nuovo gioco, il numero da indovinare e' generato in automatico
+      tags:
+        - hiLoGame
+      responses:
+        "200":
+          description: Gioco creato con successo!
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Game" }
+        default:
+          description: Errore inaspettato!
+
+  /games/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      tags:
+        - hiLoGame
+      summary: Ottieni le info sul gioco con l'id specificato
+      responses:
+        "200":
+          description: Ecco i dati sul gioco
+          content: #Mi serve sapere non solo il num. tentativi ma anche tutti i valori dei tentativi
+            application/json:
+              schema: { $ref: "#/components/schemas/Game" }
+    put: #Ma put non serve a sostituire risorse??
+      tags:
+        - hiLoGame
+      summary: Prova a indovinare numero
+      responses:
+        "200":
+          description: correct
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinishedGame" }
+        "400":
+          description: hi
+        "401":
+          description: lo
+        default:
+          description: Errore inatteso
+
+components:
+  schemas:
+    FinishedGame:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        numeroDaIndovinare:
+          type: integer
+          format: int32
+        totalGuesses:
+          type: integer
+          minimum: 1
+          maximum: 10
+        statoGioco:
+          enum:
+            - win
+            - lose
+
+    Game:
+      required:
+        - id
+        - numeroDaIndovinare
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 8840
+        numeroDaIndovinare:
+          type: integer
+          format: int32
+          example: 426
+        tentativi:
+          type: object
+          properties:
+            numeroInserito:
+              type: integer
+              format: int32
+            risultato:
+              enum:
+                - hi
+                - lo
+                - correct
+
+        statoGioco:
+          enum:
+            - win
+            - lose
+            - playing
